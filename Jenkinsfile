@@ -1,35 +1,32 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u root'
-        }
-    }
+    agent none
 
     stages {
 
-        stage('Checkout') {
+        stage('Backend') {
+            agent {
+                docker {
+                    image 'maven:3.9.6-eclipse-temurin-17'
+                }
+            }
+
             steps {
-                echo 'Checking out code...'
+                sh 'mvn --version'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Frontend') {
+            agent {
+                docker {
+                    image 'node:20-alpine'
+                }
+            }
+
             steps {
-                sh 'pip install -r requirements.txt'
+                sh 'node --version'
+                sh 'npm --version'
             }
         }
 
-        stage('Build') {
-            steps {
-                sh 'python --version'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'python -m py_compile app.py'
-            }
-        }
     }
 }
