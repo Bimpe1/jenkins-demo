@@ -1,30 +1,34 @@
 pipeline {
-    agent none
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     stages {
 
-        stage('Backend') {
-            agent {
-                docker {
-                    image 'maven:3.9.6-eclipse-temurin-17'
-                }
-            }
-
+        stage('Checkout') {
             steps {
-                sh 'mvn --version'
+                echo 'Checking out code...'
             }
         }
 
-        stage('Frontend') {
-            agent {
-                docker {
-                    image 'node:20-alpine'
-                }
-            }
-
+        stage('Install Dependencies') {
             steps {
-                sh 'node --version'
-                sh 'npm --version'
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t flask-demo:${BUILD_NUMBER} .'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'python -m py_compile app.py'
             }
         }
 
